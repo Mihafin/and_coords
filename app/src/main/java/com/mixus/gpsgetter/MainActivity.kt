@@ -1,6 +1,7 @@
 package com.mixus.gpsgetter
 
 import android.Manifest
+import android.content.Intent
 import android.content.IntentSender
 import android.location.Location
 import android.location.Location.FORMAT_DEGREES
@@ -20,7 +21,7 @@ object AppConstants {
     const val LOCATION_IS_OPENED_CODE = 1002
 }
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
 
     companion object {
         private const val TAG = "FragmentActivity"
@@ -54,10 +55,10 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         textView = findViewById(R.id.lblCenter)
-        textView?.setText(R.string.Hi)
+        textView?.setText(R.string.Waiting)
 
 
-        //Check if you have ACCESS_FINE_LOCATION permission
+        Log.i(TAG, "======> Start check permisions.")
         if (!EasyPermissions.hasPermissions(
                 this@MainActivity,
                 Manifest.permission.ACCESS_FINE_LOCATION)
@@ -70,6 +71,48 @@ class MainActivity : AppCompatActivity() {
             textView?.setText(R.string.Hi);
             checkLocationIsTurnedOn()
         }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        Log.d(TAG, "======> onActivityResult")
+
+        super.onActivityResult(requestCode, resultCode, data)
+        when (requestCode) {
+            AppConstants.LOCATION_IS_OPENED_CODE -> {
+                if (resultCode == AppCompatActivity.RESULT_OK) {
+                    Log.d(TAG, "======> Location result is OK")
+                }
+                else {
+                    Log.d(TAG, "======> Location result is NOT OK")
+                    //activity?.finish()
+                }
+            }
+        }
+    }
+
+    override fun onPermissionsDenied(requestCode: Int, perms: MutableList<String>) {
+        Log.d(TAG, "======> onPermissionsDenied")
+    }
+
+    override fun onPermissionsGranted(requestCode: Int, perms: MutableList<String>) {
+        Log.d(TAG, "======> onPermissionsGranted")
+        checkLocationIsTurnedOn()
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        Log.d(TAG, "======> onRequestPermissionsResult")
+        // Forward results to EasyPermissions
+        EasyPermissions.onRequestPermissionsResult(
+            requestCode,
+            permissions,
+            grantResults, this
+        )
     }
 
 
@@ -85,7 +128,7 @@ class MainActivity : AppCompatActivity() {
     private fun checkLocationIsTurnedOn() { // Begin by checking if the device has the necessary location settings.
         mSettingsClient!!.checkLocationSettings(mLocationSettingsRequest)
             .addOnSuccessListener(this) {
-                Log.i(TAG, "All location settings are satisfied.")
+                Log.i(TAG, "======> All location settings are satisfied.")
                 startLocationUpdates()
             }
             .addOnFailureListener(this) { e ->
