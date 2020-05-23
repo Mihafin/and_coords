@@ -1,4 +1,6 @@
 <resources>
     <string name="app_name">GpsGetter</string>
     <string name="Hi">Hi</string>
+    <string name="NeedPermision">Need permision!</string>
+    <string name="location_is_required_msg">Please!!!</string>
 </resources>
